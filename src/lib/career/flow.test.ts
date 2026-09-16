@@ -54,6 +54,10 @@ describe("답변 해석", () => {
     expect(toExperienceTitle("보급품 수불 관리하는 일을 주로 했어요")).toBe("보급품 수불 관리");
     expect(toExperienceTitle("문서 수신발을 담당했습니다")).toBe("문서 수신발");
     expect(toExperienceTitle("차량 정비를 자주 했어요")).toBe("차량 정비");
+    // "~하는 것도 했어요" 처럼 조사 도 가 붙는 경우
+    expect(toExperienceTitle("신병 들어오면 개인 물품 불출하는 것도 했어요")).toBe(
+      "신병 들어오면 개인 물품 불출",
+    );
   });
 });
 

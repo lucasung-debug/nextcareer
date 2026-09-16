@@ -6,7 +6,7 @@ import { Modal, Notice } from "./components/bits.js";
 import { buildCareerDocument, renderPreview } from "./lib/career/careerDocument.js";
 import { requestExtraction } from "./lib/career/client.js";
 import { advance, currentQuestion, startInterview, submitAnswer } from "./lib/career/conductor.js";
-import { buildSampleSession } from "./lib/career/sample.js";
+import { buildSampleSession, SAMPLE_TURNS } from "./lib/career/sample.js";
 import {
   closeExperience,
   confirmDoc,
@@ -28,6 +28,8 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [tab, setTab] = useState<"chat" | "doc">("chat");
+  /** 가상 사례를 몇 단계까지 진행해 보여줄지 */
+  const [sampleStep, setSampleStep] = useState(SAMPLE_TURNS);
   const [guideOpen, setGuideOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
@@ -153,8 +155,9 @@ export default function App() {
       {!started ? (
         <StartScreen
           onStart={() => setConsentOpen(true)}
-          onSample={() => {
-            setState(buildSampleSession());
+          onSample={async () => {
+            setSampleStep(SAMPLE_TURNS);
+            setState(await buildSampleSession());
             setTab("doc");
           }}
         />
@@ -162,7 +165,9 @@ export default function App() {
         <>
           {state.mode === "sample" && (
             <div className="mb-3">
-              <Notice text="가상 사례입니다. 실제 AI 요청 없이 미리 만들어 둔 예시로 동작합니다." />
+              <Notice
+                text={`가상 사례입니다. 실제 인물의 정보가 아니고 AI 요청도 보내지 않습니다. 질문 순서와 근거 연결은 실제 면담과 같은 방식으로 동작합니다. 전체 ${SAMPLE_TURNS}단계.`}
+              />
             </div>
           )}
 
@@ -205,6 +210,18 @@ export default function App() {
                       ? advance(closeExperience(s, s.activeExperienceId))
                       : s,
                   )
+                }
+                sampleControls={
+                  state.mode === "sample" ? (
+                    <SampleControls
+                      step={sampleStep}
+                      onStep={async (next) => {
+                        const clamped = Math.max(0, Math.min(next, SAMPLE_TURNS));
+                        setSampleStep(clamped);
+                        setState(await buildSampleSession(clamped));
+                      }}
+                    />
+                  ) : undefined
                 }
               />
             </div>
@@ -300,6 +317,80 @@ export default function App() {
         지금까지의 대화와 정리된 내용이 모두 지워집니다. 저장되지 않으니 필요한 문서는 먼저 내려받아
         주세요.
       </Modal>
+    </div>
+  );
+}
+
+/**
+ * 가상 사례 조작바.
+ * 심사하는 사람이 면담이 어떻게 진행되는지 한 단계씩 따라볼 수 있게 한다.
+ */
+function SampleControls({
+  step,
+  onStep,
+}: {
+  step: number;
+  onStep: (next: number) => void;
+}) {
+  const atStart = step === 0;
+  const atEnd = step >= SAMPLE_TURNS;
+  const pct = Math.round((step / SAMPLE_TURNS) * 100);
+
+  return (
+    <div className="rounded-[10px] border border-[#e5e7eb] bg-white p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[12.5px] font-semibold">
+          가상 사례 따라가기 · {step} / {SAMPLE_TURNS}단계
+        </span>
+        <span className="meta-text">{atEnd ? "완성" : "진행 중"}</span>
+      </div>
+
+      <div
+        className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-[#f4f4f4]"
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="가상 사례 진행률"
+      >
+        <div className="h-full bg-[#101010] transition-all" style={{ width: `${pct}%` }} />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="btn-quiet tap" disabled={atStart} onClick={() => onStep(0)}>
+          처음으로
+        </button>
+        <button
+          type="button"
+          className="btn-quiet tap"
+          disabled={atStart}
+          onClick={() => onStep(step - 1)}
+        >
+          이전
+        </button>
+        <button
+          type="button"
+          className="btn-primary tap"
+          disabled={atEnd}
+          onClick={() => onStep(step + 1)}
+        >
+          다음 대화 보기
+        </button>
+        <button
+          type="button"
+          className="btn-quiet tap"
+          disabled={atEnd}
+          onClick={() => onStep(SAMPLE_TURNS)}
+        >
+          결과까지 한 번에
+        </button>
+      </div>
+
+      <p className="meta-text mt-2">
+        {atEnd
+          ? "면담이 끝난 상태입니다. 오른쪽에서 근거·확인 상태를 보시고 Word로 내려받으실 수 있습니다."
+          : "다음 대화를 누르면 질문과 답변이 한 개씩 진행됩니다. 오른쪽 문서도 같이 채워집니다."}
+      </p>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { QuestionPlan } from "../lib/career/planner.js";
 import type { ChatMessage } from "../lib/career/types.js";
@@ -21,6 +21,7 @@ export function Interview({
   onSubmit,
   onSkip,
   onFinishExperience,
+  sampleControls,
 }: {
   messages: ChatMessage[];
   plan: QuestionPlan | null;
@@ -29,6 +30,8 @@ export function Interview({
   onSubmit: (text: string) => void;
   onSkip: () => void;
   onFinishExperience: () => void;
+  /** 가상 사례일 때는 입력란 대신 이 내용을 보여준다 */
+  sampleControls?: ReactNode;
 }) {
   const [draft, setDraft] = useState("");
   const [composing, setComposing] = useState(false);
@@ -98,9 +101,11 @@ export function Interview({
       <div className="space-y-3 border-t border-[#e5e7eb] px-5 py-4">
         {notice && <Notice text={notice} tone="warn" />}
 
-        {plan?.hint && <p className="meta-text readable">{plan.hint}</p>}
+        {sampleControls}
 
-        {plan?.choices && plan.choices.length > 0 && (
+        {!sampleControls && plan?.hint && <p className="meta-text readable">{plan.hint}</p>}
+
+        {!sampleControls && plan?.choices && plan.choices.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {plan.choices.map((c) => (
               <button
@@ -116,7 +121,7 @@ export function Interview({
           </div>
         )}
 
-        {plan ? (
+        {sampleControls ? null : plan ? (
           <>
             <label htmlFor="answer" className="sr-only">
               답변 입력
