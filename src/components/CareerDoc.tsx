@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { buildCareerDocument, renderPreview } from "../lib/career/careerDocument.js";
+import { JobBridgePanel } from "./JobBridgePanel.js";
 import { formatPeriod } from "../lib/career/period.js";
 import { canExport, isDocStale } from "../lib/career/session.js";
 import {
@@ -28,6 +29,9 @@ type Actions = {
 
 export function CareerDoc({ state, actions }: { state: SessionState; actions: Actions }) {
   const doc = useMemo(() => buildCareerDocument(state), [state]);
+  const [view, setView] = useState<"evidence" | "document" | "jobs">(state.mode === "sample" ? "document" : "evidence");
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { contentRef.current?.scrollTo({ top: 0 }); }, [view]);
   const stale = isDocStale(state);
   const exportable = canExport(state);
   const [downloading, setDownloading] = useState(false);
@@ -60,14 +64,28 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
 
   return (
     <section className="surface flex h-full min-h-0 flex-col" aria-label="경력 문서">
-      <header className="flex items-center justify-between border-b border-[#e5e7eb] px-5 py-3">
-        <h2 className="text-[13.5px] font-semibold">경력기술서</h2>
+      <header className="panel-header">
+        <h2 className="text-[15px] font-semibold">나의 경력</h2>
         <span className="meta-text">
           확인 {confirmedCount} / 전체 {totalItems.length}
         </span>
       </header>
 
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4">
+      <div className="doc-tabs" role="tablist" aria-label="경력 정리 단계">
+        {([ ["evidence", "01 근거 확인"], ["document", "02 경력기술서"], ["jobs", "03 채용 탐색"] ] as const).map(([key, label], index, all) => (
+          <button key={key} id={`doc-tab-${key}`} type="button" role="tab" aria-selected={view === key}
+            aria-controls={`doc-view-${key}`} tabIndex={view === key ? 0 : -1}
+            onClick={() => setView(key)} onKeyDown={(e) => {
+              if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+              e.preventDefault();
+              const nextIndex = e.key === "Home" ? 0 : e.key === "End" ? all.length - 1 : (index + (e.key === "ArrowRight" ? 1 : -1) + all.length) % all.length;
+              const next = all[nextIndex]![0]; setView(next); document.getElementById(`doc-tab-${next}`)?.focus();
+            }}>{label}</button>
+        ))}
+      </div>
+      <div ref={contentRef} className="doc-content">
+        <div role="tabpanel" id="doc-view-evidence" aria-labelledby="doc-tab-evidence" hidden={view !== "evidence"} className="doc-tab-panel space-y-5">
+        <p className="meta-text">문장마다 원문 근거를 열어 보고, 실제로 하신 일인지 확인해 주세요. 확인하지 않은 내용은 직군 탐색에 쓰지 않습니다.</p>
         {/* 복무 요약 */}
         <div>
           <h3 className="mb-2 text-[12px] font-semibold tracking-wide text-[#5c6270]">복무 요약</h3>
@@ -98,7 +116,7 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
 
         {/* 보직별 */}
         {state.assignments.length === 0 && (
-          <Notice text="아직 정리된 내용이 없습니다. 왼쪽 질문에 답하시면 여기에 쌓입니다." />
+          <Notice text="아직 정리된 내용이 없습니다. 대화에서 질문에 답하시면 여기에 쌓입니다." />
         )}
 
         {state.assignments.map((a, idx) => (
@@ -149,8 +167,9 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
           </div>
         ))}
 
+        </div>
         {/* 문서 미리보기 */}
-        <div className="border-t border-[#e5e7eb] pt-4">
+        <div role="tabpanel" id="doc-view-document" aria-labelledby="doc-tab-document" hidden={view !== "document"} className="doc-tab-panel">
           <h3 className="mb-2 text-[12px] font-semibold tracking-wide text-[#5c6270]">
             경력기술서 만들기
           </h3>
@@ -168,7 +187,7 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
             {state.doc.preview ? "다시 만들기" : "확인한 내용으로 만들기"}
           </button>
           {confirmedCount === 0 && (
-            <p className="meta-text mt-1.5">확인한 항목이 하나도 없어 아직 만들 수 없습니다.</p>
+            <div className="mt-3"><Notice text="아직 확인한 항목이 없습니다. 근거 확인에서 실제 경험과 대조한 뒤 문서를 만들어 주세요." /><button type="button" className="btn-quiet tap mt-3" onClick={() => setView("evidence")}>근거 확인하기</button></div>
           )}
 
           {state.doc.preview && (
@@ -179,7 +198,7 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
                   text="내용을 고치셨습니다. 아래 미리보기는 고치기 전 버전이라 내려받을 수 없습니다. ‘다시 만들기’를 눌러 주세요."
                 />
               )}
-              <pre className="max-h-[260px] overflow-auto whitespace-pre-wrap rounded-[8px] border border-[#e5e7eb] bg-white p-3 text-[12.5px] leading-relaxed">
+              <pre tabIndex={0} aria-label="경력기술서 미리보기" className="document-paper whitespace-pre-wrap break-words rounded-[8px] border border-[#e5e7eb] bg-white p-5 text-[13px] leading-[1.85]">
                 {state.doc.preview}
               </pre>
 
@@ -218,6 +237,10 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
               {downloadError && <Notice tone="warn" text={downloadError} />}
             </div>
           )}
+        </div>
+
+        <div role="tabpanel" id="doc-view-jobs" aria-labelledby="doc-tab-jobs" hidden={view !== "jobs"} className="doc-tab-panel">
+          <JobBridgePanel state={state} onReview={() => setView("evidence")} />
         </div>
       </div>
     </section>

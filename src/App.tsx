@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CareerDoc } from "./components/CareerDoc.js";
 import { Interview } from "./components/Interview.js";
+import { StartScreen } from "./components/StartScreen.js";
 import { Modal, Notice } from "./components/bits.js";
 import { buildCareerDocument, renderPreview } from "./lib/career/careerDocument.js";
 import { requestExtraction } from "./lib/career/client.js";
@@ -130,12 +131,12 @@ export default function App() {
   );
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-[1240px] flex-col px-4 pb-6 md:px-6">
+    <div className={`app-shell ${started ? "app-shell-active" : ""}`}>
       {/* 상단 */}
-      <header className="flex items-center justify-between py-4">
+      <header className="app-header">
         <div className="flex items-baseline gap-2.5">
-          <span className="text-[17px] font-bold tracking-tight">다음경력</span>
-          <span className="rounded-full border border-[#d4d4d8] px-2 py-[2px] text-[11px] text-[#5c6270]">
+          <span className="text-[16px] font-semibold tracking-tight">다음경력</span>
+          <span className="rounded-full bg-[#e5e7eb] px-2 py-[2px] text-[11px] text-[#505967]">
             베타
           </span>
           <span className="meta-text hidden sm:inline">군 경험에서, 다음 경력으로</span>
@@ -172,16 +173,27 @@ export default function App() {
           )}
 
           {/* 모바일 탭 */}
-          <div className="mb-3 flex gap-1.5 md:hidden" role="tablist" aria-label="화면 전환">
+          <div className="mobile-tabs" role="tablist" aria-label="화면 전환">
             {(
               [
                 ["chat", "대화"],
-                ["doc", "경력기술서"],
+                ["doc", "경력 · 채용"],
               ] as const
             ).map(([k, label]) => (
               <button
                 key={k}
+                id={`workspace-tab-${k}`}
                 role="tab"
+                aria-controls={`workspace-${k}`}
+                tabIndex={tab === k ? 0 : -1}
+                onKeyDown={(e) => {
+                  if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
+                    e.preventDefault();
+                    const next = e.key === "Home" ? "chat" : e.key === "End" ? "doc" : k === "chat" ? "doc" : "chat";
+                    setTab(next);
+                    document.getElementById(`workspace-tab-${next}`)?.focus();
+                  }
+                }}
                 aria-selected={tab === k}
                 onClick={() => setTab(k)}
                 className={`tap flex-1 rounded-full border px-3 py-2 text-[13.5px] ${
@@ -195,8 +207,8 @@ export default function App() {
             ))}
           </div>
 
-          <main className="grid min-h-0 flex-1 gap-4 md:grid-cols-2">
-            <div className={`${tab === "chat" ? "block" : "hidden"} min-h-[62vh] md:block md:min-h-[72vh]`}>
+          <main className="workspace">
+            <div id="workspace-chat" className={`workspace-column ${tab === "chat" ? "is-active" : ""}`}>
               <Interview
                 messages={state.messages}
                 plan={plan}
@@ -225,14 +237,14 @@ export default function App() {
                 }
               />
             </div>
-            <div className={`${tab === "doc" ? "block" : "hidden"} min-h-[62vh] md:block md:min-h-[72vh]`}>
+            <div id="workspace-doc" className={`workspace-column ${tab === "doc" ? "is-active" : ""}`}>
               <CareerDoc state={state} actions={actions} />
             </div>
           </main>
         </>
       )}
 
-      <footer className="meta-text mt-5 border-t border-[#e5e7eb] pt-4">
+      <footer className="app-footer meta-text">
         대화 내용은 브라우저 메모리에만 있고 저장되지 않습니다. 새로고침하거나 창을 닫으면 사라지니
         완성된 문서는 내려받아 두세요. 이 서비스는 본인 확인을 돕는 도구이며 경력 인증 기관이
         아닙니다.
@@ -388,47 +400,9 @@ function SampleControls({
 
       <p className="meta-text mt-2">
         {atEnd
-          ? "면담이 끝난 상태입니다. 오른쪽에서 근거·확인 상태를 보시고 Word로 내려받으실 수 있습니다."
-          : "다음 대화를 누르면 질문과 답변이 한 개씩 진행됩니다. 오른쪽 문서도 같이 채워집니다."}
+          ? "면담이 끝난 상태입니다. 경력 · 채용 화면에서 근거를 확인하고 Word로 내려받으실 수 있습니다."
+          : "다음 대화를 누르면 질문과 답변이 한 개씩 진행됩니다. 경력 내용도 같이 채워집니다."}
       </p>
     </div>
-  );
-}
-
-function StartScreen({ onStart, onSample }: { onStart: () => void; onSample: () => void }) {
-  return (
-    <main className="surface flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-      <h1 className="text-[28px] font-bold leading-[1.35] tracking-tight md:text-[34px]">
-        당연했던 일에도,
-        <br />
-        경력은 있습니다.
-      </h1>
-      <p className="chat-text readable mt-4 text-[#5c6270]">
-        특별한 성과가 없어도 괜찮습니다. 매일 하시던 일을 하나씩 여쭤보고, 민간 채용담당자가 읽을 수
-        있는 경력기술서로 정리해 드립니다.
-      </p>
-
-      <div className="mt-7 flex flex-wrap justify-center gap-2.5">
-        <button type="button" className="btn-primary tap" onClick={onStart}>
-          내 경험 시작하기
-        </button>
-        <button type="button" className="btn-quiet tap" onClick={onSample}>
-          가상 사례 먼저 보기
-        </button>
-      </div>
-
-      <div className="mt-9 grid max-w-[620px] gap-2.5 text-left sm:grid-cols-3">
-        {[
-          ["지어내지 않습니다", "말씀하신 문장에 근거가 붙어야만 기록됩니다."],
-          ["몰아붙이지 않습니다", "모르시면 넘어갑니다. 결과가 없어도 됩니다."],
-          ["문서로 나갑니다", "확인하신 내용만 Word 경력기술서로 내려받습니다."],
-        ].map(([title, body]) => (
-          <div key={title} className="rounded-[10px] border border-[#e5e7eb] bg-[#fafafa] p-3">
-            <p className="text-[13px] font-semibold">{title}</p>
-            <p className="meta-text mt-0.5">{body}</p>
-          </div>
-        ))}
-      </div>
-    </main>
   );
 }

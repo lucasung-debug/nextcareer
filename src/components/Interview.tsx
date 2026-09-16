@@ -54,17 +54,17 @@ export function Interview({
   };
 
   return (
-    <section className="surface flex h-full min-h-0 flex-col" aria-label="면담">
+    <section className="surface interview-panel flex h-full min-h-0 flex-col" aria-label="면담">
       {/* 진행 상태 */}
-      <header className="flex items-center justify-between border-b border-[#e5e7eb] px-5 py-3">
-        <h2 className="text-[13.5px] font-semibold">
+      <header className="panel-header">
+        <h2 className="text-[15px] font-semibold">
           {plan ? PHASE_LABEL[plan.phase] ?? "면담" : "정리 완료"}
         </h2>
         <span className="meta-text">한 번에 하나씩 여쭤봅니다</span>
       </header>
 
       {/* 대화 로그 */}
-      <div ref={logRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
+      <div ref={logRef} role="log" aria-label="면담 대화" aria-live="polite" aria-relevant="additions text" className="chat-log">
         {messages.length === 0 && (
           <p className="chat-text readable text-[#5c6270]">
             잘 정리해서 말하지 않으셔도 괜찮습니다. 실제로 하신 일을 하나씩 여쭤보겠습니다.
@@ -76,10 +76,11 @@ export function Interview({
             <div
               className={
                 m.role === "user"
-                  ? "chat-text readable max-w-[85%] rounded-[12px] rounded-br-[4px] bg-[#101010] px-4 py-2.5 text-white"
-                  : "chat-text readable max-w-[92%] rounded-[12px] rounded-bl-[4px] bg-[#f4f4f4] px-4 py-2.5 text-[#242424]"
+                  ? "chat-text readable max-w-[90%] rounded-[10px] rounded-br-[3px] bg-[#f3f4f6] px-4 py-3 text-[#1c1d1f]"
+                  : "chat-text readable max-w-[96%] py-2 text-[#242424]"
               }
             >
+              <span className="mb-1 block text-[11px] font-semibold tracking-wide text-[#6f7988]">{m.role === "user" ? "나의 답변" : "다음경력"}</span>
               {m.text}
             </div>
           </div>
@@ -98,7 +99,7 @@ export function Interview({
       </div>
 
       {/* 입력 영역 */}
-      <div className="space-y-3 border-t border-[#e5e7eb] px-5 py-4">
+      <div className="interview-controls">
         {notice && <Notice text={notice} tone="warn" />}
 
         {sampleControls}
@@ -126,6 +127,7 @@ export function Interview({
             <label htmlFor="answer" className="sr-only">
               답변 입력
             </label>
+            <div className="composer">
             <textarea
               id="answer"
               ref={inputRef}
@@ -143,10 +145,10 @@ export function Interview({
                   send(draft);
                 }
               }}
-              className="w-full resize-none rounded-[10px] border border-[#e5e7eb] bg-white px-3.5 py-2.5 text-[15px] leading-relaxed outline-none placeholder:text-[#9aa0ab] focus:border-[#101010] disabled:bg-[#fafafa]"
+              className="w-full resize-none bg-transparent px-1 py-1 text-[16px] leading-relaxed outline-none placeholder:text-[#6f7988] disabled:opacity-60"
             />
-            <div className="flex items-center justify-between gap-3">
-              <span className="meta-text">Enter 전송 · Shift+Enter 줄바꿈 · 대화는 저장되지 않습니다</span>
+            <div className="composer-toolbar">
+              <span className="meta-text hidden lg:block">Enter 전송 · Shift+Enter 줄바꿈</span>
               <div className="flex gap-2">
                 {plan.phase === "deep_dive" && (
                   <button
@@ -174,9 +176,10 @@ export function Interview({
                 </button>
               </div>
             </div>
+            </div>
           </>
         ) : (
-          <Notice text="여쭤볼 내용이 끝났습니다. 오른쪽에서 확인하시고 경력기술서를 내려받으세요." />
+          <Notice text="여쭤볼 내용이 끝났습니다. 경력 · 채용 화면에서 확인하고 경력기술서를 내려받으세요." />
         )}
       </div>
     </section>

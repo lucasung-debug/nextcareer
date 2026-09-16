@@ -1,7 +1,13 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from "react";
 
 import type { CardItem, ItemStatus } from "../lib/career/types.js";
-
 /* ------------------------------------------------------------------ */
 /* 상태 배지                                                            */
 /* 색만으로 구분하지 않는다. 항상 기호 + 글자를 함께 쓴다.                */
@@ -31,82 +37,56 @@ export function StatusBadge({ status }: { status: ItemStatus }) {
 
 export function EvidenceChip({ item, index }: { item: CardItem; index: number }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const panelId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
   const authored = item.userAuthored;
 
   return (
-    <div className="relative inline-block" ref={ref}>
+    <>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-controls={panelId}
-        className="rounded border border-[#e5e7eb] px-1.5 py-[1px] align-middle text-[11px] font-medium text-[#1d4ed8] hover:bg-[#eef2ff]"
-        title="이 문장의 근거 보기"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        title={`근거 ${index} 보기`}
+        className="inline-flex min-h-[28px] min-w-[28px] items-center justify-center rounded border border-line px-2 align-middle text-[11px] font-medium text-evidence hover:bg-evidence-soft"
       >
         [{index}]
       </button>
 
-      {open && (
-        <div
-          id={panelId}
-          role="dialog"
-          aria-label={`근거 ${index}`}
-          className="absolute left-0 top-[calc(100%+6px)] z-30 w-[290px] rounded-[10px] border border-[#e5e7eb] bg-white p-3 shadow-lg"
-        >
-          <p className="mb-1.5 text-[11px] font-semibold tracking-wide text-[#5c6270]">
-            {authored ? "직접 입력하신 내용" : "말씀하신 내용"}
+      <Modal open={open} title={`근거 ${index}`} onClose={() => setOpen(false)}>
+        <p className="mb-1.5 text-[11px] font-semibold tracking-wide text-muted">
+          {authored ? "직접 입력하신 내용" : "말씀하신 내용"}
+        </p>
+        {authored ? (
+          <p className="text-[13px] leading-relaxed">
+            이 항목은 직접 수정하셨습니다. 본인 진술이 근거입니다.
           </p>
-          {authored ? (
-            <p className="text-[13px] leading-relaxed text-[#242424]">
-              이 항목은 직접 수정하셨습니다. 본인 진술이 근거입니다.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {item.evidence.map((ev, i) => (
-                <li
-                  key={`${ev.messageId}-${i}`}
-                  className="border-l-2 border-[#1d4ed8] pl-2 text-[13px] leading-relaxed text-[#242424]"
-                >
-                  “{ev.quote}”
-                </li>
-              ))}
-            </ul>
-          )}
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="mt-2.5 text-[11.5px] text-[#5c6270] underline underline-offset-2"
-          >
-            닫기
-          </button>
-        </div>
-      )}
-    </div>
+        ) : (
+          <ul className="space-y-2">
+            {item.evidence.map((ev, i) => (
+              <li
+                key={`${ev.messageId}-${i}`}
+                className="border-l-2 border-evidence pl-2 text-[13px] leading-relaxed"
+              >
+                “{ev.quote}”
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
+    </>
   );
 }
 
 /* ------------------------------------------------------------------ */
 /* 모달                                                                 */
 /* ------------------------------------------------------------------ */
+
+function getFocusable(root: HTMLElement): HTMLElement[] {
+  return Array.from(
+    root.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((el) => el.getClientRects().length > 0);
+}
 
 export function Modal({
   open,
@@ -121,35 +101,114 @@ export function Modal({
   onClose: () => void;
   footer?: ReactNode;
 }) {
+  const headingId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const prevFocusRef = useRef<HTMLElement | null>(null);
+
+  /* 열림/닫힘 상태 전환: 배경 inert, 초기 포커스, 포커스 복귀 */
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    prevFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    /* 배경(inert): 루트 아래 형제 브랜치를 막아 모달 밖 탐색을 차단한다 */
+    const inerted: Array<{ el: HTMLElement; prev: boolean }> = [];
+    const dialog = dialogRef.current;
+    if (dialog) {
+      let top: HTMLElement = dialog;
+      while (top.parentElement && top.parentElement !== document.body) {
+        top = top.parentElement;
+      }
+      const root = top.parentElement;
+      if (root) {
+        for (const node of Array.from(root.children)) {
+          if (node instanceof HTMLElement && node !== top) {
+            inerted.push({ el: node, prev: node.inert });
+            node.inert = true;
+          }
+        }
+      }
+    }
+
+    dialogRef.current?.focus();
+
+    return () => {
+      for (const { el, prev } of inerted) el.inert = prev;
+      const prev = prevFocusRef.current;
+      if (prev && prev.isConnected) prev.focus();
+      prevFocusRef.current = null;
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open]);
+
+  /* 배경 스크롤 잠금: 닫힐 때 이전 값으로 정확히 복원 */
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
+  const onOverlayKeyDown = (e: ReactKeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const focusables = getFocusable(dialog);
+    if (focusables.length === 0) {
+      e.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = focusables[0]!;
+    const last = focusables[focusables.length - 1]!;
+    const active = document.activeElement;
+    const inside = active instanceof HTMLElement && dialog.contains(active);
+    if (e.shiftKey) {
+      if (!inside || active === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (!inside || active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   if (!open) return null;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4"
+      onKeyDown={onOverlayKeyDown}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
-        className="max-h-[85vh] w-full max-w-[520px] overflow-auto rounded-[12px] border border-[#e5e7eb] bg-white p-6 shadow-xl"
+        aria-labelledby={headingId}
+        tabIndex={-1}
+        className="max-h-[85vh] w-full max-w-[520px] overflow-auto rounded-[12px] border border-line bg-white p-5 shadow-xl outline-none sm:p-6"
       >
-        <h2 className="mb-3 text-[17px] font-semibold">{title}</h2>
-        <div className="chat-text text-[#242424]">{children}</div>
+        <h2 id={headingId} className="mb-3 text-[17px] font-semibold">
+          {title}
+        </h2>
+        <div className="chat-text">{children}</div>
         <div className="mt-5 flex justify-end gap-2">
           {footer ?? (
-            <button type="button" className="btn-primary tap" onClick={onClose}>
+            <button
+              type="button"
+              className="btn-primary tap min-h-[44px] min-w-[72px]"
+              onClick={onClose}
+            >
               닫기
             </button>
           )}
