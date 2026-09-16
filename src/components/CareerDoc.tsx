@@ -240,10 +240,21 @@ function AssignmentHeader({
   actions: Actions;
 }) {
   const [editing, setEditing] = useState(false);
+  // useState 초기값은 처음 마운트될 때 한 번만 잍힌다.
+  // 보직은 대화를 진행하면서 값이 채워지므로,
+  // 수정을 열 순간의 값으로 다시 채워야 빈칸이 나오지 않는다.
   const [role, setRole] = useState(a.role);
   const [unit, setUnit] = useState(a.unitLabel);
   const [period, setPeriod] = useState(a.periodRaw);
   const [reason, setReason] = useState(a.moveReasonRaw);
+
+  const openEditor = () => {
+    setRole(a.role);
+    setUnit(a.unitLabel);
+    setPeriod(a.periodRaw);
+    setReason(a.moveReasonRaw);
+    setEditing(true);
+  };
 
   const save = () => {
     if (unit !== a.unitLabel) actions.updateAssignmentField(a.id, { unitLabel: unit });
@@ -312,7 +323,7 @@ function AssignmentHeader({
         </span>
         <button
           type="button"
-          onClick={() => setEditing(true)}
+          onClick={openEditor}
           className="tap rounded-full border border-[#d4d4d8] bg-white px-2.5 py-1 text-[12px] hover:bg-[#fafafa]"
         >
           보직 수정
@@ -427,7 +438,11 @@ function ItemRow({
         </button>
         <button
           type="button"
-          onClick={() => setEditing(true)}
+          onClick={() => {
+            // 열 때의 값으로 다시 채운다 (마운트 시점 값이 남아 있지 않도록)
+            setDraft(item.text);
+            setEditing(true);
+          }}
           className="tap rounded-full border border-[#d4d4d8] px-2.5 py-1 text-[12px] hover:bg-[#fafafa]"
         >
           수정
