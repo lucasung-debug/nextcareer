@@ -19,8 +19,8 @@ import {
   type MoveReasonCode,
   type SessionState,
   type AiExtraction,
-} from "./types";
-import { generalizeUnitLabel } from "./pii";
+} from "./types.js";
+import { generalizeUnitLabel } from "./pii.js";
 
 /* ------------------------------------------------------------------ */
 /* id / hash                                                           */

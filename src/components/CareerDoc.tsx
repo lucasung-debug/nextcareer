@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 
-import { buildCareerDocument, renderPreview } from "../lib/career/careerDocument";
-import { formatPeriod } from "../lib/career/period";
-import { canExport, isDocStale } from "../lib/career/session";
+import { buildCareerDocument, renderPreview } from "../lib/career/careerDocument.js";
+import { formatPeriod } from "../lib/career/period.js";
+import { canExport, isDocStale } from "../lib/career/session.js";
 import {
   FIELD_LABELS,
   type CardItem,
   type Experience,
   type ItemStatus,
   type SessionState,
-} from "../lib/career/types";
-import { EvidenceChip, Notice, StatusBadge } from "./bits";
+} from "../lib/career/types.js";
+import { EvidenceChip, Notice, StatusBadge } from "./bits.js";
 
 type Actions = {
   setItemStatus: (id: string, status: ItemStatus) => void;
@@ -37,7 +37,7 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
     setDownloadError(null);
     try {
       // Word 생성기는 무거우므로 내려받을 때만 불러온다.
-      const { buildDocxBlob, docxFileName } = await import("../lib/career/docxBuilder");
+      const { buildDocxBlob, docxFileName } = await import("../lib/career/docxBuilder.js");
       const blob = await buildDocxBlob(doc);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

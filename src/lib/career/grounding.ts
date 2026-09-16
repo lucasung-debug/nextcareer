@@ -10,8 +10,8 @@
  *  3. 표현 검증  : 성과·평가를 뜻하는 단어가 인용에 없는데 쓰였는가
  */
 
-import type { AiCardItem, AiExtraction, AiInterpretation, ChatMessage, Evidence } from "./types";
-import { ALL_FIELDS } from "./types";
+import type { AiCardItem, AiExtraction, AiInterpretation, ChatMessage, Evidence } from "./types.js";
+import { ALL_FIELDS } from "./types.js";
 
 /** 공백 차이만 무시한다. 단어를 바꾸는 정규화는 하지 않는다. */
 function normalize(text: string): string {

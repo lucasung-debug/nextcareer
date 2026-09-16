@@ -5,7 +5,7 @@
  * 읽지 못하면 원문을 그대로 문서에 싣는다. (추측해서 날짜를 만들지 않는다)
  */
 
-import type { Period, PeriodPoint } from "./types";
+import type { Period, PeriodPoint } from "./types.js";
 
 const ONGOING = /(현재|재직\s*중|지금|진행\s*중)/;
 

@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-import { buildSampleSession } from "./sample";
-import { buildCareerDocument, renderPreview } from "./careerDocument";
-import { buildDocxBuffer, docxFileName } from "./docxBuilder";
+import { buildSampleSession } from "./sample.js";
+import { buildCareerDocument, renderPreview } from "./careerDocument.js";
+import { buildDocxBuffer, docxFileName } from "./docxBuilder.js";
 
 /** 파일로 뽑아 보고 싶을 때 OUT_DOCX 를 지정한다. */
 const OUT = process.env["OUT_DOCX"];

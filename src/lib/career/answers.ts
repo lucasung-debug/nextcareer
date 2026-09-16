@@ -5,7 +5,7 @@
  * AI 호출을 아끼고, 결과를 예측 가능하게 만들기 위해서다.
  */
 
-import type { Branch, ServiceType } from "./types";
+import type { Branch, ServiceType } from "./types.js";
 
 /* ------------------------------------------------------------------ */
 /* 건너뛰기 / 거절                                                      */

@@ -20,7 +20,7 @@ import {
   convertMillimetersToTwip,
 } from "docx";
 
-import type { CareerDocument, DocumentSection } from "./careerDocument";
+import type { CareerDocument, DocumentSection } from "./careerDocument.js";
 
 const FONT = "맑은 고딕";
 const GRAY = "595959";

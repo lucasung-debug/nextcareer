@@ -8,7 +8,7 @@
  * 뽑아낸 결과는 grounding.ts 를 통과해야만 화면에 올라간다.
  */
 
-import { ALL_FIELDS, FIELD_LABELS, type AiExtraction, type ChatMessage, type FieldKey } from "./types";
+import { ALL_FIELDS, FIELD_LABELS, type AiExtraction, type ChatMessage, type FieldKey } from "./types.js";
 
 export const MODEL_ID = "openai/gpt-6-astra";
 export const MAX_TEXT = 700;

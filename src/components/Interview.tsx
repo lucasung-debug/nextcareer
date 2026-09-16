@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { QuestionPlan } from "../lib/career/planner";
-import type { ChatMessage } from "../lib/career/types";
-import { Notice } from "./bits";
+import type { QuestionPlan } from "../lib/career/planner.js";
+import type { ChatMessage } from "../lib/career/types.js";
+import { Notice } from "./bits.js";
 
 const PHASE_LABEL: Record<string, string> = {
   service: "복무 기본정보",

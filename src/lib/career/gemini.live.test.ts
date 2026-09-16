@@ -5,8 +5,8 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { callGemini, DEFAULT_MODEL } from "./gemini";
-import type { ChatMessage } from "./types";
+import { callGemini, DEFAULT_MODEL } from "./gemini.js";
+import type { ChatMessage } from "./types.js";
 
 const KEY = process.env["GEMINI_API_KEY"] ?? "";
 const LIVE = process.env["LIVE"] === "1";

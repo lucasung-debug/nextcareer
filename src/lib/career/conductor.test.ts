@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { currentQuestion, startInterview, submitAnswer, type ExtractFn } from "./conductor";
-import { __resetIdCounter, emptySession } from "./session";
-import { buildCareerDocument } from "./careerDocument";
-import type { AiExtraction, SessionState } from "./types";
+import { currentQuestion, startInterview, submitAnswer, type ExtractFn } from "./conductor.js";
+import { __resetIdCounter, emptySession } from "./session.js";
+import { buildCareerDocument } from "./careerDocument.js";
+import type { AiExtraction, SessionState } from "./types.js";
 
 beforeEach(() => __resetIdCounter());
 

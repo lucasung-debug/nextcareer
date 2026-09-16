@@ -8,9 +8,9 @@ import {
   parseBranch,
   parseServiceType,
   toExperienceTitle,
-} from "./answers";
-import { buildRequestBody, buildUserPrompt, parseExtraction, trimMessages } from "./extraction";
-import type { ChatMessage } from "./types";
+} from "./answers.js";
+import { buildRequestBody, buildUserPrompt, parseExtraction, trimMessages } from "./extraction.js";
+import type { ChatMessage } from "./types.js";
 
 describe("답변 해석", () => {
   it("건너뛰기를 알아본다", () => {

@@ -8,14 +8,14 @@
  *  - 문장은 다시 쓰지 않는다. 사용자가 확인한 문장 그대로 옮긴다.
  */
 
-import { formatPeriod, parsePeriod, totalServicePeriod } from "./period";
-import { confirmedItems, unknownItems } from "./session";
+import { formatPeriod, parsePeriod, totalServicePeriod } from "./period.js";
+import { confirmedItems, unknownItems } from "./session.js";
 import {
   FIELD_BLOCK,
   FIELD_LABELS,
   type CardItem,
   type SessionState,
-} from "./types";
+} from "./types.js";
 
 export type DocumentSection = {
   /** "1. 군사경찰 수사관" */

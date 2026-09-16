@@ -3,8 +3,8 @@
  * 키는 서버에만 있으므로 브라우저는 /api/extract 만 부른다.
  */
 
-import type { ExtractionContext } from "./extraction";
-import type { AiExtraction, ChatMessage } from "./types";
+import type { ExtractionContext } from "./extraction.js";
+import type { AiExtraction, ChatMessage } from "./types.js";
 
 export type ExtractResponse =
   | { ok: true; extraction: AiExtraction; model?: string }

@@ -18,7 +18,7 @@ import {
   type FieldKey,
   type Phase,
   type SessionState,
-} from "./types";
+} from "./types.js";
 
 export const MAX_ASK_PER_FIELD = 2;
 export const MAX_QUESTIONS_PER_EXPERIENCE = 14;

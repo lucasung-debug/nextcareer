@@ -7,10 +7,10 @@
  * - 응답은 responseSchema 로 JSON 을 강제하고, 결과는 grounding 검증을 다시 통과해야 한다.
  */
 
-import { buildUserPrompt, SYSTEM_PROMPT, type ExtractionContext } from "./extraction";
-import { groundExtraction } from "./grounding";
-import type { AiExtraction, ChatMessage } from "./types";
-import { ALL_FIELDS } from "./types";
+import { buildUserPrompt, SYSTEM_PROMPT, type ExtractionContext } from "./extraction.js";
+import { groundExtraction } from "./grounding.js";
+import type { AiExtraction, ChatMessage } from "./types.js";
+import { ALL_FIELDS } from "./types.js";
 
 export const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 

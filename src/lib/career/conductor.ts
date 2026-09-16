@@ -22,11 +22,11 @@ import {
   parseBranch,
   parseServiceType,
   toExperienceTitle,
-} from "./answers";
-import type { ExtractionContext } from "./extraction";
-import { detectSensitive, sensitiveMessage } from "./pii";
-import { findAssignment, findExperience, planNextQuestion, type QuestionPlan } from "./planner";
-import { parsePeriod } from "./period";
+} from "./answers.js";
+import type { ExtractionContext } from "./extraction.js";
+import { detectSensitive, sensitiveMessage } from "./pii.js";
+import { findAssignment, findExperience, planNextQuestion, type QuestionPlan } from "./planner.js";
+import { parsePeriod } from "./period.js";
 import {
   addAssignment,
   addExperience,
@@ -39,8 +39,8 @@ import {
   setMoveReason,
   setService,
   updateAssignment,
-} from "./session";
-import type { AiExtraction, SessionState } from "./types";
+} from "./session.js";
+import type { AiExtraction, SessionState } from "./types.js";
 
 export type ExtractFn = (
   messages: SessionState["messages"],

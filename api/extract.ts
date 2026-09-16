@@ -15,9 +15,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { z } from "zod";
 
-import { callGemini, DEFAULT_MODEL } from "../src/lib/career/gemini";
-import { detectSensitive, sensitiveMessage } from "../src/lib/career/pii";
-import { ALL_FIELDS, type ChatMessage, type FieldKey } from "../src/lib/career/types";
+import { callGemini, DEFAULT_MODEL } from "../src/lib/career/gemini.js";
+import { detectSensitive, sensitiveMessage } from "../src/lib/career/pii.js";
+import { ALL_FIELDS, type ChatMessage, type FieldKey } from "../src/lib/career/types.js";
 
 const MAX_TEXT = 700;
 const MAX_MESSAGES = 24;

@@ -6,14 +6,14 @@ import {
   unsupportedClaimWords,
   validateCardItem,
   validateEvidence,
-} from "./grounding";
-import { detectSensitive, generalizeUnitLabel } from "./pii";
+} from "./grounding.js";
+import { detectSensitive, generalizeUnitLabel } from "./pii.js";
 import {
   MAX_ASK_PER_FIELD,
   isFieldSatisfied,
   nextField,
   planNextQuestion,
-} from "./planner";
+} from "./planner.js";
 import {
   __resetIdCounter,
   addAssignment,
@@ -38,11 +38,11 @@ import {
   setMoveReason,
   setService,
   updateAssignment,
-} from "./session";
-import { formatDuration, formatPeriod, parsePeriod, totalServicePeriod } from "./period";
-import { buildCareerDocument, renderPreview } from "./careerDocument";
-import { buildDocxBuffer, docxFileName } from "./docxBuilder";
-import type { ChatMessage, SessionState } from "./types";
+} from "./session.js";
+import { formatDuration, formatPeriod, parsePeriod, totalServicePeriod } from "./period.js";
+import { buildCareerDocument, renderPreview } from "./careerDocument.js";
+import { buildDocxBuffer, docxFileName } from "./docxBuilder.js";
+import type { ChatMessage, SessionState } from "./types.js";
 
 beforeEach(() => __resetIdCounter());
 

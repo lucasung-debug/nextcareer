@@ -15,8 +15,8 @@ import {
   setMoveReason,
   setService,
   updateAssignment,
-} from "./session";
-import type { SessionState } from "./types";
+} from "./session.js";
+import type { SessionState } from "./types.js";
 
 export function buildSampleSession(): SessionState {
   let s = emptySession();

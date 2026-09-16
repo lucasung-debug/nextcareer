@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { CareerDoc } from "./components/CareerDoc";
-import { Interview } from "./components/Interview";
-import { Modal, Notice } from "./components/bits";
-import { buildCareerDocument, renderPreview } from "./lib/career/careerDocument";
-import { requestExtraction } from "./lib/career/client";
-import { currentQuestion, startInterview, submitAnswer } from "./lib/career/conductor";
-import { buildSampleSession } from "./lib/career/sample";
+import { CareerDoc } from "./components/CareerDoc.js";
+import { Interview } from "./components/Interview.js";
+import { Modal, Notice } from "./components/bits.js";
+import { buildCareerDocument, renderPreview } from "./lib/career/careerDocument.js";
+import { requestExtraction } from "./lib/career/client.js";
+import { currentQuestion, startInterview, submitAnswer } from "./lib/career/conductor.js";
+import { buildSampleSession } from "./lib/career/sample.js";
 import {
   confirmDoc,
   editItem,
@@ -17,8 +17,8 @@ import {
   setItemStatus,
   setService,
   updateAssignment,
-} from "./lib/career/session";
-import type { ItemStatus, SessionState } from "./lib/career/types";
+} from "./lib/career/session.js";
+import type { ItemStatus, SessionState } from "./lib/career/types.js";
 
 export default function App() {
   const [state, setState] = useState<SessionState>(() => emptySession());

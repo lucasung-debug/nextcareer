@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
-import type { CardItem, ItemStatus } from "../lib/career/types";
+import type { CardItem, ItemStatus } from "../lib/career/types.js";
 
 /* ------------------------------------------------------------------ */
 /* 상태 배지                                                            */
