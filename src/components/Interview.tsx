@@ -20,6 +20,7 @@ export function Interview({
   notice,
   onSubmit,
   onSkip,
+  onFinishExperience,
 }: {
   messages: ChatMessage[];
   plan: QuestionPlan | null;
@@ -27,6 +28,7 @@ export function Interview({
   notice: string | null;
   onSubmit: (text: string) => void;
   onSkip: () => void;
+  onFinishExperience: () => void;
 }) {
   const [draft, setDraft] = useState("");
   const [composing, setComposing] = useState(false);
@@ -141,6 +143,17 @@ export function Interview({
             <div className="flex items-center justify-between gap-3">
               <span className="meta-text">Enter 전송 · Shift+Enter 줄바꿈 · 대화는 저장되지 않습니다</span>
               <div className="flex gap-2">
+                {plan.phase === "deep_dive" && (
+                  <button
+                    type="button"
+                    className="btn-quiet tap"
+                    disabled={busy}
+                    onClick={onFinishExperience}
+                    title="이 업무에 대한 질문을 멈추고 다음으로 넘어갑니다"
+                  >
+                    이만 정리
+                  </button>
+                )}
                 {plan.skippable && (
                   <button type="button" className="btn-quiet tap" disabled={busy} onClick={onSkip}>
                     건너뛰기

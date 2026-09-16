@@ -17,6 +17,7 @@ import { z } from "zod";
 
 import { callGemini, DEFAULT_MODEL } from "../src/lib/career/gemini.js";
 import { detectSensitive, sensitiveMessage } from "../src/lib/career/pii.js";
+import { checkRateLimit, clientIp, rateLimitMessage } from "../src/lib/career/rateLimit.js";
 import { ALL_FIELDS, type ChatMessage, type FieldKey } from "../src/lib/career/types.js";
 
 const MAX_TEXT = 700;
@@ -45,6 +46,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== "POST") {
     res.status(405).json({ ok: false, error: { code: "method", message: "POST만 허용됩니다." } });
+    return;
+  }
+
+  // 공개 서비스라 AI 호출 비용이 운영자에게 청구된다.
+  // 반복 호출을 먼저 걸러낸다.
+  const limit = checkRateLimit(clientIp(req.headers as Record<string, string | string[] | undefined>));
+  if (!limit.allowed) {
+    res.setHeader("Retry-After", String(limit.retryAfterSec));
+    res.status(429).json({
+      ok: false,
+      error: { code: "rate_limit", message: rateLimitMessage(limit), retryable: true },
+    });
     return;
   }
 

@@ -18,6 +18,10 @@ type Actions = {
   removeItem: (id: string) => void;
   setUnitDisplay: (assignmentId: string, asGiven: boolean) => void;
   setName: (name: string) => void;
+  updateAssignmentField: (
+    assignmentId: string,
+    patch: { role?: string; unitLabel?: string; periodRaw?: string; moveReasonRaw?: string },
+  ) => void;
   generate: () => void;
   confirmDoc: (v: boolean) => void;
 };
@@ -99,15 +103,7 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
 
         {state.assignments.map((a, idx) => (
           <div key={a.id} className="rounded-[10px] border border-[#e5e7eb] bg-[#fafafa] p-3.5">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-              <h3 className="text-[14px] font-semibold">
-                {idx + 1}. {a.role || "보직 미기재"}
-              </h3>
-              <span className="meta-text">
-                {formatPeriod(a.period, a.periodRaw) || "기간 미기재"} · 이동 사유{" "}
-                {a.moveReasonRaw || "미확인"}
-              </span>
-            </div>
+            <AssignmentHeader index={idx + 1} assignment={a} actions={actions} />
 
             {/* 부대명 표기 선택 */}
             {a.unitLabel && (
@@ -229,6 +225,102 @@ export function CareerDoc({ state, actions }: { state: SessionState; actions: Ac
 }
 
 /* ------------------------------------------------------------------ */
+
+/**
+ * 보직 기본정보는 경력기술서 이력표에 그대로 실린다.
+ * 대화 중 잘못 들어간 내용을 여기서 고칠 수 있어야 한다.
+ */
+function AssignmentHeader({
+  index,
+  assignment: a,
+  actions,
+}: {
+  index: number;
+  assignment: SessionState["assignments"][number];
+  actions: Actions;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [role, setRole] = useState(a.role);
+  const [unit, setUnit] = useState(a.unitLabel);
+  const [period, setPeriod] = useState(a.periodRaw);
+  const [reason, setReason] = useState(a.moveReasonRaw);
+
+  const save = () => {
+    if (unit !== a.unitLabel) actions.updateAssignmentField(a.id, { unitLabel: unit });
+    if (role !== a.role) actions.updateAssignmentField(a.id, { role });
+    if (period !== a.periodRaw) actions.updateAssignmentField(a.id, { periodRaw: period });
+    if (reason !== a.moveReasonRaw) actions.updateAssignmentField(a.id, { moveReasonRaw: reason });
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="rounded-[8px] border border-[#101010] bg-white p-3">
+        <p className="meta-text mb-2">보직 정보 수정</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(
+            [
+              ["소속", unit, setUnit, "예: 제1사단 군수대대"],
+              ["보직명", role, setRole, "예: 보급관"],
+              ["재직기간", period, setPeriod, "예: 2021.03~2023.02"],
+              ["이동 사유", reason, setReason, "예: 정기인사"],
+            ] as const
+          ).map(([label, value, setter, ph]) => (
+            <label key={label} className="block">
+              <span className="meta-text">{label}</span>
+              <input
+                value={value}
+                placeholder={ph}
+                onChange={(e) => setter(e.target.value)}
+                className="mt-0.5 w-full rounded-[6px] border border-[#e5e7eb] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#101010]"
+              />
+            </label>
+          ))}
+        </div>
+        <div className="mt-2.5 flex gap-2">
+          <button type="button" className="btn-primary tap" onClick={save}>
+            저장
+          </button>
+          <button
+            type="button"
+            className="btn-quiet tap"
+            onClick={() => {
+              setRole(a.role);
+              setUnit(a.unitLabel);
+              setPeriod(a.periodRaw);
+              setReason(a.moveReasonRaw);
+              setEditing(false);
+            }}
+          >
+            취소
+          </button>
+        </div>
+        <p className="meta-text mt-1.5">고치시면 이전에 만든 경력기술서는 무효가 됩니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+      <h3 className="text-[14px] font-semibold">
+        {index}. {a.role || "보직 미기재"}
+      </h3>
+      <div className="flex items-center gap-2">
+        <span className="meta-text">
+          {formatPeriod(a.period, a.periodRaw) || "기간 미기재"} · 이동 사유{" "}
+          {a.moveReasonRaw || "미확인"}
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="tap rounded-full border border-[#d4d4d8] bg-white px-2.5 py-1 text-[12px] hover:bg-[#fafafa]"
+        >
+          보직 수정
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function ExperienceBlock({ exp, actions }: { exp: Experience; actions: Actions }) {
   if (exp.items.length === 0) {

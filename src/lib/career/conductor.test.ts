@@ -107,17 +107,31 @@ describe("면담 진행", () => {
     expect(currentQuestion(s)?.field).not.toBe(before);
   });
 
-  it("AI 실패해도 같은 질문을 무한 반복하지 않는다", async () => {
-    let s = await seedToDeepDive();
+  it("AI 실패해도 같은 질문에 갚히지 않는다", async () => {
+    const s = await seedToDeepDive();
     const r1 = await submitAnswer(s, "근무표를 봤습니다.", failingExtractor);
+
     expect(r1.notice).toContain("요청이 몰려");
     expect(r1.retryable).toBe(true);
+    // 질문했다는 사실은 AI 실패와 무관하게 기록된다
     expect(r1.state.assignments[0]!.experiences[0]!.asked["duties"]).toBe(1);
+    // 실패했다고 같은 항목을 다시 물고 늘어지지 않고 다음으로 넘어간다
+    expect(currentQuestion(r1.state)?.field).not.toBe("duties");
 
-    const r2 = await submitAnswer(r1.state, "근무표를 봤습니다.", failingExtractor);
-    expect(r2.state.assignments[0]!.experiences[0]!.asked["duties"]).toBe(2);
-    // 두 번 물었으면 다음 항목으로 넘어간다
-    expect(currentQuestion(r2.state)?.field).not.toBe("duties");
+    // 사실은 하나도 저장되지 않는다
+    expect(r1.state.assignments[0]!.experiences[0]!.items).toHaveLength(0);
+  });
+
+  it("결과 항목은 예산에 밀리지 않고 반드시 한 번 물어본다", async () => {
+    let s = await seedToDeepDive();
+    const asked: string[] = [];
+    for (let i = 0; i < 20; i += 1) {
+      const q = currentQuestion(s);
+      if (!q || q.phase !== "deep_dive") break;
+      if (q.field) asked.push(q.field);
+      s = (await answer(s, "그 일을 했습니다")).state;
+    }
+    expect(asked).toContain("outcomes");
   });
 
   it("지어내 달라는 요청은 거절하고 사실로 저장하지 않는다", async () => {

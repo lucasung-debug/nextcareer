@@ -5,9 +5,10 @@ import { Interview } from "./components/Interview.js";
 import { Modal, Notice } from "./components/bits.js";
 import { buildCareerDocument, renderPreview } from "./lib/career/careerDocument.js";
 import { requestExtraction } from "./lib/career/client.js";
-import { currentQuestion, startInterview, submitAnswer } from "./lib/career/conductor.js";
+import { advance, currentQuestion, startInterview, submitAnswer } from "./lib/career/conductor.js";
 import { buildSampleSession } from "./lib/career/sample.js";
 import {
+  closeExperience,
   confirmDoc,
   editItem,
   emptySession,
@@ -15,9 +16,11 @@ import {
   resetSession,
   setDocPreview,
   setItemStatus,
+  setMoveReason,
   setService,
   updateAssignment,
 } from "./lib/career/session.js";
+import { parsePeriod } from "./lib/career/period.js";
 import type { ItemStatus, SessionState } from "./lib/career/types.js";
 
 export default function App() {
@@ -101,6 +104,22 @@ export default function App() {
           updateAssignment(s, assignmentId, { unitDisplay: asGiven ? "as-given" : "generalized" }),
         ),
       setName: (name: string) => setState((s) => setService(s, { displayName: name })),
+      updateAssignmentField: (
+        assignmentId: string,
+        patch: { role?: string; unitLabel?: string; periodRaw?: string; moveReasonRaw?: string },
+      ) =>
+        setState((s) => {
+          if (patch.moveReasonRaw !== undefined) {
+            return setMoveReason(s, assignmentId, patch.moveReasonRaw);
+          }
+          if (patch.periodRaw !== undefined) {
+            return updateAssignment(s, assignmentId, {
+              periodRaw: patch.periodRaw,
+              period: parsePeriod(patch.periodRaw),
+            });
+          }
+          return updateAssignment(s, assignmentId, patch);
+        }),
       generate: () =>
         setState((s) => setDocPreview(s, renderPreview(buildCareerDocument(s)))),
       confirmDoc: (v: boolean) => setState((s) => confirmDoc(s, v)),
@@ -180,6 +199,13 @@ export default function App() {
                 notice={notice}
                 onSubmit={handleAnswer}
                 onSkip={() => handleAnswer("넘어갈게요")}
+                onFinishExperience={() =>
+                  setState((s) =>
+                    s.activeExperienceId
+                      ? advance(closeExperience(s, s.activeExperienceId))
+                      : s,
+                  )
+                }
               />
             </div>
             <div className={`${tab === "doc" ? "block" : "hidden"} min-h-[62vh] md:block md:min-h-[72vh]`}>

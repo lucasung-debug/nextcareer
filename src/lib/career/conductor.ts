@@ -206,6 +206,14 @@ function withNextQuestion(state: SessionState): SessionState {
   return { ...addMessage(state, "assistant", plan.question), phase: plan.phase };
 }
 
+/**
+ * 상태를 바꾼 뒤 다음 질문을 대화에 이어붙인다.
+ * "이만 정리" 처럼 답변 없이 단계가 넘어가는 경우에 쓴다.
+ */
+export function advance(state: SessionState): SessionState {
+  return withNextQuestion(state);
+}
+
 /** 대화를 시작한다. 첫 질문을 넣어 준다. */
 export function startInterview(state: SessionState): SessionState {
   const plan = planNextQuestion(state);

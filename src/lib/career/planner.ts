@@ -21,7 +21,8 @@ import {
 } from "./types.js";
 
 export const MAX_ASK_PER_FIELD = 2;
-export const MAX_QUESTIONS_PER_EXPERIENCE = 14;
+/** 한 업무에 던질 수 있는 질문 총량 (1회차 8 + 2회차 3) */
+export const MAX_QUESTIONS_PER_EXPERIENCE = 11;
 /** 한 보직에서 다룰 경험 수 상한 */
 export const MAX_EXPERIENCES = 4;
 
@@ -155,16 +156,41 @@ function canAsk(exp: Experience, field: FieldKey): boolean {
   return asked < MAX_ASK_PER_FIELD;
 }
 
-/** 경험에서 다음에 물을 슬롯 */
+/**
+ * 2회차에서만 다시 캐물 슬롯.
+ * 경력기술서에서 비중이 큰 세 가지만 골랐다.
+ */
+const DEEPEN_FIELDS: FieldKey[] = ["duties", "actions", "scope"];
+
+/**
+ * 경험에서 다음에 물을 슬롯.
+ *
+ * 두 회차로 나눠 묻는다.
+ *   1회차 — 모든 슬롯을 순서대로 "한 번씩" 물어본다.
+ *   2회차 — 아직 빈 핵심 슬롯만 한 번 더 캐묻는다.
+ *
+ * 앞 슬롯을 연속해서 두 번씩 물어버리면 질문 예산을 다 써서
+ * 마지막 슬롯(결과 / 확인 사항)을 아예 묻지 못하는 문제가 생긴다.
+ */
 export function nextField(exp: Experience): FieldKey | null {
   const totalAsked = ALL_FIELDS.reduce((sum, f) => sum + (exp.asked[f] ?? 0), 0);
   if (totalAsked >= MAX_QUESTIONS_PER_EXPERIENCE) return null;
 
+  // 1회차: 아직 한 번도 묻지 않은 슬롯
   for (const field of FIELD_ORDER) {
+    if ((exp.asked[field] ?? 0) > 0) continue;
     if (!canAsk(exp, field)) continue;
     if (isFieldSatisfied(exp, field)) continue;
     return field;
   }
+
+  // 2회차: 핵심 슬롯 중 아직 덜 채워진 것
+  for (const field of DEEPEN_FIELDS) {
+    if (!canAsk(exp, field)) continue;
+    if (isFieldSatisfied(exp, field)) continue;
+    return field;
+  }
+
   return null;
 }
 
