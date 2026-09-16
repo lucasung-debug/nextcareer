@@ -77,16 +77,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { messages, context } = parsed.data;
 
   // 서버 쪽 민감정보 차단. 클라이언트 검사를 우회해도 여기서 막힌다.
-  const lastUser = [...messages].reverse().find((m) => m.role === "user");
-  if (lastUser) {
-    const hits = detectSensitive(lastUser.text);
-    if (hits.length > 0) {
-      res.status(200).json({
-        ok: false,
-        error: { code: "sensitive", message: sensitiveMessage(hits), retryable: false },
-      });
-      return;
-    }
+  // Gemini 로 전송되는 모든 문자열을 사전에 검사한다.
+  // (마지막 사용자 답변만 검사하면 이전 대화·컨텍스트로 우회할 수 있다)
+  const scannedTexts = [
+    ...messages.map((m) => m.text),
+    context.experienceTitle,
+    context.role,
+  ];
+  const hits = scannedTexts.flatMap((t) => detectSensitive(t));
+  const uniqueHits = hits.filter(
+    (h, i) => hits.findIndex((x) => x.kind === h.kind) === i,
+  );
+  if (uniqueHits.length > 0) {
+    res.status(200).json({
+      ok: false,
+      error: { code: "sensitive", message: sensitiveMessage(uniqueHits), retryable: false },
+    });
+    return;
   }
 
   const apiKey = process.env["GEMINI_API_KEY"] ?? "";
@@ -102,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       experienceTitle: context.experienceTitle,
       role: context.role,
     },
-    { apiKey, model: process.env["GEMINI_MODEL"] ?? DEFAULT_MODEL },
+    { apiKey, model: process.env["GEMINI_MODEL"] ?? DEFAULT_MODEL, signal: AbortSignal.timeout(50_000) },
   );
 
   if (!result.ok) {

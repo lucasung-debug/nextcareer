@@ -220,3 +220,17 @@
 @layer components {
  .document-paper { max-height: clamp(180px, calc(100dvh - 570px), 400px); overflow: auto; overscroll-behavior: contain; }
 }
+
+/* Public FAQ: the same text is prerendered for people and non-JS crawlers. */
+@layer components {
+  .welcome-faq { max-width: 960px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid var(--color-line); display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }
+  .welcome-faq details { border-bottom: 1px solid var(--color-line); }
+  .welcome-faq summary { cursor: pointer; min-height: 44px; padding: 12px 4px; font-size: 14px; font-weight: 500; line-height: 1.5; }
+  .welcome-faq summary:hover { color: var(--color-ink-strong); background: #f3f4f6; }
+  .welcome-faq details p { padding: 0 4px 16px; font-size: 14px; line-height: 1.8; color: var(--color-muted); word-break: keep-all; }
+}
+@media (max-width: 767px) {
+  .welcome-faq { grid-template-columns: 1fr; gap: 12px; margin-top: 32px; }
+  .welcome-faq summary { font-size: 13px; }
+  .welcome-faq details p { font-size: 13px; }
+}

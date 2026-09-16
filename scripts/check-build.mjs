@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = fileURLToPath(new URL("../", import.meta.url));
+const html = await readFile(resolve(root, "dist/index.html"), "utf8");
+const json = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+assert.ok(json, "JSON-LD must exist in the first HTML response");
+const schema = JSON.parse(json);
+assert.equal(schema["@graph"][0].name, "다음경력");
+assert.ok(html.includes("Thank you for your service, sir."));
+assert.ok(html.includes("복무해 주셔서 감사합니다."));
+assert.ok(html.includes("다음경력은 어떤 서비스인가요?"));
+assert.ok(!html.includes('<div id="root"></div>'), "Landing body must be prerendered");
+assert.equal((html.match(/rel="canonical"/g) ?? []).length, 1);
+assert.ok(!html.includes("홍길동"), "No example/interview session in the SEO HTML");
+assert.ok(!/AIza[0-9A-Za-z_-]{30,}|gh[pousr]_[A-Za-z0-9]{25,}/.test(html), "No credential patterns");
+const png = await readFile(resolve(root, "dist/og-image.png"));
+assert.equal(png.subarray(1, 4).toString(), "PNG");
+assert.equal(png.readUInt32BE(16), 1200);
+assert.equal(png.readUInt32BE(20), 630);
+for (const asset of ["robots.txt", "sitemap.xml", "favicon.svg"]) assert.ok((await readFile(resolve(root, "dist", asset))).length > 0);
+console.log("Build checked: static public body, FAQ, JSON-LD, canonical, share image 1200x630, crawler files, no session data.");

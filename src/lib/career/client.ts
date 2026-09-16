@@ -10,8 +10,8 @@ export type ExtractResponse =
   | { ok: true; extraction: AiExtraction; model?: string }
   | { ok: false; error: { code?: string; message: string; retryable: boolean } };
 
-/** 90초 안에 응답이 없으면 끊는다. */
-const TIMEOUT_MS = 90_000;
+/** 60초 안에 응답이 없으면 끊는다. 서버 쪽 제한(50초)보다 길게 둔다. */
+const TIMEOUT_MS = 60_000;
 
 export async function requestExtraction(
   messages: ChatMessage[],

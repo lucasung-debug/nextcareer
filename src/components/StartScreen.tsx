@@ -1,3 +1,5 @@
+import { PUBLIC_FAQ } from "../site.js";
+
 export function StartScreen({ onStart, onSample }: { onStart: () => void; onSample: () => void }) {
   return (
     <main className="surface welcome" aria-labelledby="welcome-title">
@@ -34,6 +36,18 @@ export function StartScreen({ onStart, onSample }: { onStart: () => void; onSamp
           </li>
         ))}
       </ol>
+
+      <section className="welcome-faq" aria-labelledby="faq-title">
+        <h2 id="faq-title" className="text-[18px] font-semibold tracking-tight">시작 전 궁금한 점</h2>
+        <div>
+          {PUBLIC_FAQ.map(({ question, answer }) => (
+            <details key={question}>
+              <summary>{question}</summary>
+              <p>{answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

@@ -1,11 +1,11 @@
 {
-  "name": "nextcareer-core",
+  "name": "nextcareer",
   "private": true,
   "type": "module",
-  "description": "다음경력 - 면담 로직 / 근거 검증 / 경력기술서 생성 코어",
+  "description": "다음경력 - 전역 간부를 위한 근거 기반 경력기술서 웹 서비스",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/build.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

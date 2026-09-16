@@ -80,6 +80,16 @@
 - **TypeUI / Minimal:** 4px 단위 간격 리듬, 컨트롤 상태, 접근성 우선 원칙만 반영. 인디고·아이보리 팔레트와 별도 폰트는 혼합하지 않았습니다. [참고 문서](https://www.typeui.sh/design-skills/minimal)
 - 파란색은 근거를 여는 기능에만 사용합니다. 본문은 한국어 가독성을 위해 Pretendard를 유지합니다.
 
+## 검색·공유·서비스 식별
+
+- 서비스 표시 이름은 **다음경력 / NextCareer**, 소스 저장소·내부 패키지는 **nextcareer**입니다.
+- 제출 링크는 **https://nextcareer-five.vercel.app/** 로 유지합니다. 기존 링크를 깨뜨리는 도메인 변경은 하지 않습니다.
+- React·Vite 앱입니다. 빌드 시 첫 화면과 이용 FAQ를 같은 React 컴포넌트로 미리 렌더링하고, 브라우저에서는 해당 HTML을 이어서 활성화합니다. 별도 Next.js나 데이터베이스는 사용하지 않습니다.
+- HTML에 한국어 설명, 대표 URL(canonical), Open Graph·Twitter 공유 카드, WebSite·WebApplication 구조화 데이터를 넣습니다. 평가·평점·가격·성과를 지어내어 마크업하지 않습니다.
+- robots.txt와 홈페이지 1개 URL의 sitemap.xml을 제공합니다. /api/의 크롤링은 제한하고 응답에는 noindex를 붙입니다. robots.txt는 보안 장치가 아니며 실제 입력 검사는 서버에서 합니다.
+- 검색/AI 답변에 노출되거나 높은 순위를 얻는다는 보장은 없습니다. Search Console 등록·색인 요청은 이 코드 변경과 별개의 작업입니다.
+- 공식 근거: [Google AI 기능](https://developers.google.com/search/docs/appearance/ai-features), [JavaScript SEO](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics), [OpenAI 크롤러](https://platform.openai.com/docs/bots).
+
 ## 데이터 취급
 
 - 대화는 **브라우저 메모리에만** 있습니다. 데이터베이스가 없습니다.
@@ -102,6 +112,8 @@ src/lib/career/
   answers.ts          구조적 답변 해석 (AI 미사용)
   extraction.ts       AI 추출 계약 · 프롬프트
   gemini.ts           Gemini 호출
+  client.ts           브라우저 API 요청 · 60초 대기 제한
+  rateLimit.ts        인스턴스 내 요청 제한 (최선 노력)
   pii.ts              민감정보 차단 · 부대명 일반화
   period.ts           재직기간 파서
   jobBridge.ts        확인된 근거 → 직군·원티드 검색 링크
@@ -110,12 +122,21 @@ src/lib/career/
   sample.ts           가상 사례 (실제 인물 아님)
 ```
 
+## 서버 안전장치
+
+- 전송될 모든 메시지와 경험 제목·보직 문맥을 서버에서 다시 검사합니다. 마지막 답변만 검사하지 않습니다.
+- 서버의 Gemini 요청은 50초에 중단하고, 클라이언트는 최대 60초를 기다립니다. 플랫폼 함수 제한은 60초입니다.
+- API 응답은 no-store이며 본문·API 키를 로그에 남기지 않습니다. 정적 응답에는 nosniff와 Referrer-Policy를 지정합니다.
+- 메모리 기반 요청 제한은 인스턴스 간 공유되는 강제 지출 한도가 아닙니다. 운영자는 Google Cloud의 사용량·할당량을 별도로 관리해야 합니다.
+
 ## 실행
 
 ```bash
 npm install
 cp .env.example .env.local   # GEMINI_API_KEY 입력
 npm test                      # 단위 테스트
+npm run build                 # Vite + 첫 화면 미리 렌더링 + 결과 검증
+npm run preview               # 완성 빌드 확인
 ```
 
 실제 Gemini 호출 테스트 (요금 발생):
