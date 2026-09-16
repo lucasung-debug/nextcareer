@@ -96,11 +96,31 @@ export function parseServiceType(text: string): ServiceType | null {
  * 지어내지 않고, 사용자가 쓴 표현을 줄이기만 한다.
  */
 export function toExperienceTitle(text: string): string {
-  let t = text.trim().split(/[.\n]/)[0] ?? text.trim();
-  t = t
-    .replace(/(하는\s*)?(일|업무|것)(을|를)?\s*(했|맡았|담당했)[^\s]*$/, "")
-    .replace(/(했어요|했습니다|합니다|였어요|이었어요|이에요|예요)$/, "")
-    .trim();
+  let t = (text.trim().split(/[.\n]/)[0] ?? text.trim()).trim();
+
+  // 한글은 어미·부사가 뒤에 붙으므로 뒤에서부터 한 겹씩 떼어낸다.
+  //   "보급품 수불 관리하는 일을 주로 했어요" -> "보급품 수불 관리"
+  const strip = [
+    // 1) 맺음말
+    /\s*(했어요|했습니다|합니다|해요|했음|함|였어요|이었어요|이에요|예요|입니다)$/,
+    // 2) 동사 어간
+    /\s*(했|맡았|담당했|수행했|처리했)$/,
+    // 2-1) "~을 담당" 처럼 조사 + 서술명사만 남은 경우
+    /\s*(을|를)\s*(담당|수행|처리|진행|관리|맡아)$/,
+    // 3) 부사
+    /\s*(주로|자주|보통|많이|계속|늘|항상|거의|대부분)$/,
+    // 4) "~하는 일을" 꼴리
+    /\s*(하는|한|했던)?\s*(일|업무|것|업무를)(을|를|은|는)?$/,
+    // 5) 마지막에 조사만 남은 경우 (제목이 조사로 끝나면 항상 어색하다)
+    /\s*(을|를|은|는|이|가)$/,
+  ];
+
+  let previous = "";
+  while (previous !== t) {
+    previous = t;
+    for (const re of strip) t = t.replace(re, "").trim();
+  }
+
   if (t.length > 30) t = `${t.slice(0, 30)}…`;
   return t || text.trim().slice(0, 30);
 }

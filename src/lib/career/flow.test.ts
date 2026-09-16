@@ -48,6 +48,13 @@ describe("답변 해석", () => {
     );
     expect(toExperienceTitle("인사명령 처리")).toBe("인사명령 처리");
   });
+
+  it("부사가 끼어있어도 제목을 깔끔하게 자른다", () => {
+    // 실제 면담에서 나온 입력. 이전에는 "보급품 수불 관리하는 일을 주로" 로 잘렸다.
+    expect(toExperienceTitle("보급품 수불 관리하는 일을 주로 했어요")).toBe("보급품 수불 관리");
+    expect(toExperienceTitle("문서 수신발을 담당했습니다")).toBe("문서 수신발");
+    expect(toExperienceTitle("차량 정비를 자주 했어요")).toBe("차량 정비");
+  });
 });
 
 const messages: ChatMessage[] = [
