@@ -42,9 +42,20 @@ describe("가상 사례", () => {
     expect(experiences).toHaveLength(3);
     expect(experiences.map((e) => e.title)).toEqual([
       "보급품 수불 관리",
-      "신병 들어오면 개인 물품 불출",
+      "신병 개인 물품 불출",
       "인사명령 처리",
     ]);
+  });
+
+  it("부대명 일반화가 실제로 달라 보이도록 되어 있다", async () => {
+    const state = await buildSampleSession();
+    for (const a of state.assignments) {
+      // 기본값은 일반 표기고, 실명과 달라야 선택 기능이 보인다
+      expect(a.unitDisplay).toBe("generalized");
+      expect(a.unitGeneralized).not.toBe(a.unitLabel);
+      expect(a.unitGeneralized).toContain("○○");
+    }
+    expect(buildCareerDocument(state).history[0]?.unit).toBe("○○군수대대");
   });
 
   it("8개 항목 유형을 모두 보여준다", async () => {
