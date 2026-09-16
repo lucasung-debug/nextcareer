@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+/*
+ * 다음경력 디자인 토큰
+ * 단색 중심(monochrome), 종이 느낌의 배경. 파란색은 "근거" 표시에만 쓴다.
+ * 상태(확인/미확인/초안)는 색만으로 구분하지 않고 항상 글자와 아이콘을 함께 쓴다.
+ */
+
+@theme {
+  --color-paper: #f4f4f4;
+  --color-ink: #242424;
+  --color-ink-strong: #101010;
+  --color-surface: #ffffff;
+  --color-line: #e5e7eb;
+  --color-line-strong: #d4d4d8;
+  --color-muted: #5c6270;
+  --color-evidence: #1d4ed8;
+  --color-evidence-soft: #eef2ff;
+
+  --font-sans: "Pretendard Variable", Pretendard, "Noto Sans KR", -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+
+  --radius-card: 12px;
+}
+
+@layer base {
+  html,
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 포커스 링은 모든 조작 요소에서 같은 토큰을 쓴다. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink-strong);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  button {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  .surface {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: 0 4px 8px rgba(36, 36, 36, 0.05);
+  }
+
+  /* 본문 가독 폭: 한 줄이 너무 길어지지 않게 제한한다. */
+  .readable {
+    max-width: 62ch;
+  }
+
+  .chat-text {
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  .meta-text {
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--color-muted);
+  }
+
+  /* 클릭 대상 최소 크기 확보 */
+  .tap {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  .btn-primary {
+    background-color: var(--color-ink-strong);
+    color: #fff;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: opacity 0.15s ease;
+  }
+  .btn-primary:hover:not(:disabled) {
+    opacity: 0.86;
+  }
+  .btn-primary:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+
+  .btn-quiet {
+    background-color: #fff;
+    color: var(--color-ink);
+    border: 1px solid var(--color-line-strong);
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .btn-quiet:hover:not(:disabled) {
+    background-color: #fafafa;
+  }
+  .btn-quiet:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+@media (min-width: 768px) {
+  .chat-text {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

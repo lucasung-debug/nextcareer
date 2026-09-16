@@ -1,5 +1,4 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { ZipFile } from "node:zlib";
 
 import {
   groundExtraction,
